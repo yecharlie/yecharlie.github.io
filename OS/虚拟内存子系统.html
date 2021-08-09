@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>虚拟内存子系统</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<section id="虚拟内存子系统" class="level1">
+<h1>虚拟内存子系统</h1>
+<center>
+<figure>
+<img src="虚拟内存子系统.svg" alt="1.png"/>
+<figcaption>
+图1 虚拟内存子系统导图
+</figcaption>
+</figure>
+</center>
+<p>在地址映射缓存（TLB）管理上，即当TLB未命中时，有两种处理思路，一种是基于复杂指令集体系结构的硬件管理模式，代表有Intel的x86，另一种基于的是精简指令集体系结构，通过trap指令让OS处理的模式。</p>
+<p>注意到这里更新TLB后的return-from-trap（假设由OS控制的TLB）和系统调用的区别，这里返回的是导致异常(TLB_MISS)的指令，而后者直接返回到下一条指令。</p>
+<section id="一地址映射与空间管理" class="level2">
+<h2>一、地址映射与空间管理</h2>
+<figure>
+<embed src="地址映射与空间管理.html" /><figcaption aria-hidden="true">image-20210620092653496</figcaption>
+</figure>
+</section>
+<section id="二基于复杂指令集的内存访问控制算法" class="level2">
+<h2>二、基于复杂指令集的内存访问控制算法</h2>
+<p><img src="基于复杂指令集的内存访问控制算法.svg" /></p>
+</section>
+<section id="三换页策略" class="level2">
+<h2>三、换页策略</h2>
+<p>在早期系统中，内存资源紧张，换页策略成了影响系统性能的最重要决策之一，这种局面随着内存造价的降低而改观，所以只需要了解一下前人智慧。</p>
+<ul>
+<li>简单策略：先进先出、随机。</li>
+<li>最优策略：未来最迟使用。</li>
+<li>从历史中学习：最少使用、最久没用（LRU）。</li>
+<li>LRU Approx: 基于时钟算法的LRU近似,需要分页访问位（和染尘位）数据结构支持。</li>
+</ul>
+</section>
+</section>
+</body>
+</html>

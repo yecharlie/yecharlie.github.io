@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>动态规划</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<section id="动态规划" class="level1">
+<h1>动态规划</h1>
+<section id="基本方法" class="level2">
+<h2>基本方法</h2>
+<p>动态规划的思想是很朴素的，在分布求解一个问题时，保留每一步的求解过程，如果在后续求解的过程中再次遇到这些子问题就可以直接利用已有的结果。比如某人做完了一些算法题，然后提炼出其中的题型、逻辑、代码模板，以备面试，就体现了动态规划中分步解决问题和利用分布答案的思想。</p>
+<p>动态规划特别适用于一个呈现出最优子结构和重叠子结构的优化问题，其中最优子结构保证正确性，是应用<strong>分治思想</strong>解决问题的基础，而动态规划解决带有大量重叠子结构的问题时很有优势。</p>
+<section id="和贪心法的比较" class="level3">
+<h3>和贪心法的比较</h3>
+<p>相同点是都依赖于原问题的最优子结构。区别在于动态规划直接依赖已解决的子问题构造新解，这是一种自底向上的解决问题的思路；而贪心法则是首先做出决策，然后再去解决新的子问题。明显地，贪心法做出第一个决策时是不可能依赖于任何已解决的子问题的，虽然它后续决策的条件会受到已有决策的限制。但和动态规划基于已解决的子问题的解做出决策（构造新解）还是有区别的。</p>
+<p>比如，在<a href="https://leetcode-cn.com/problems/longest-increasing-subsequence/">例：求最长严格递增子序列</a>的官方题解中，定义子问题<span class="math inline">\(d[i]\)</span>表示当前长度为<span class="math inline">\(i\)</span>的子序列的<strong>最短</strong>末尾数值，并说这是贪心，这当然是错的：先看它第一步将d[1]设置为序列的第一个数时，它就已经得到了原问题在前k(=1.html)个数上的解，之后又根据第k步的解构造了第k+1步的解，所以用的还是动态规划。</p>
+</section>
+<section id="和分治法的比较" class="level3">
+<h3>和分治法的比较</h3>
+<p>两种指导思想，一个是分步，侧重的是两个子问题在时间上的联系；一个是分治，侧重的是两者在空间上的独立。此外，分治法遵从“划分、解决子问题、合并子问题答案”的递归逻辑，代表算法有快速排序。把一摞传单分给多个人独立派发，虽然用到了分治的思想，但显然不是分治法。</p>
+</section>
+<section id="两步动规" class="level3">
+<h3>两步动规</h3>
+<p><a href="https://leetcode-cn.com/problems/01-matrix/.html">例 01矩阵</a>，因为有四个方向要考虑，第一次从左上到右下，考虑左边和上边两个方向的最近0，第二次从右下到左上，综合右方和下方的答案。直截了当的思路。</p>
+<p><a href="https://leetcode-cn.com/problems/candy/solution/fen-fa-tang-guo-by-leetcode-solution-f01p/.html">例 分发糖果</a>，两个相邻方向，第一次从左到右，考虑靠左边的分配的传递关系，第二次从右到左遍历，此时右边的分配已经完成，可以直接利用右边最近小朋友的糖果数目。</p>
+</section>
+<section id="状态机" class="level3">
+<h3>状态机</h3>
+<p><a href="https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/.html">例 最佳买卖股票时机含冷冻期</a>，需要画图来规划状态转移关系，如图。</p>
+<p><img src="动态规划之状态机.svg" style="zoom:150%;" /></p>
+<p>然后列出状态转移公式： <span class="math display">\[
+\left\{
+\begin{array}{lll}
+buy[d] &amp;=&amp; cooling[d-1]-price[d] \\
+holding[d] &amp;=&amp; \max(buy[d-1], holding[d-1]) \\
+sell[d] &amp;=&amp; \max(buy[d-1], holding[d-1])+price[d] \\
+cooling[d] &amp;=&amp; \max(sell[d-1], cooling[d-1])
+\end{array}
+\right.
+\]</span> 公式有几点需要说明：</p>
+<ol type="1">
+<li>buy[d]表示第d天发生购买后的迄今最大收益，继续持有（holding）、售卖（sell）、冷却（cooling）依此类推。</li>
+<li>注意到sell[d]没有选择从buy[d]转移。如果是当天买当天卖，这两项操作的收益为0，并将在第二天进入冷却，这个状态空间等价于第i、i+1天都处于冷却状态，其价值不会超过现有的cooling[i+1]。</li>
+<li>假设一共给出n天报价，第0天的状态为冷却。到第n天的时候，最大收益将从售卖或者冷却状态中产生。</li>
+</ol>
+</section>
+<section id="记忆化" class="level3">
+<h3>记忆化</h3>
+<p>例</p>
+</section>
+</section>
+<section id="应用举例" class="level2">
+<h2>应用举例</h2>
+<section id="组合优化问题" class="level3">
+<h3>组合优化问题</h3>
+<p>“0-1”背包问题，给定N个物品的价值v和重量w，以及背包的总重W，每个物品要么不拿，要么拿一次，求装载的最大价值。设<span class="math inline">\(dp[i][j]\)</span>为在前i个物品，以及总重j的约束下的最大价值，那么： <span class="math display">\[
+dp[i][j] = 
+\left\{ 
+\begin{array}{l}
+    \max(dp[i-1][j],dp[i-1][j-w_i]+v_i), \text{if }j \ge w_i \\
+    dp[i-1][j], \text{else}
+\end{array}
+\right.
+\]</span> 完全背包问题，每个物品允许拿多次。对于物品i，他考虑要么至少拿一次，要么干脆一个都不拿。这时公式变为： <span class="math display">\[
+dp[i][j] = 
+\left\{ 
+\begin{array}{l}
+    \max(dp[i-1][j],dp[i][j-w_i]+v_i), \text{if }j \ge w_i \\
+    dp[i-1][j], \text{else}
+\end{array}
+\right.
+\]</span></p>
+</section>
+<section id="两个字符串的关系问题" class="level3">
+<h3>两个字符串的关系问题</h3>
+<p><a href="https://leetcode.com/problems/edit-distance/.html">例 编辑距离</a>，设<span class="math inline">\(dp[i][j]\)</span>是<strong>从word1[:i]到word2[:j]</strong>经历的最小步数，那么有。 <span class="math display">\[
+dp[i][j] = 
+\left\{ 
+\begin{array}{ll}
+    i, &amp;\text{iff }j=0 \\
+    dp[i-1][j-1], &amp;\text{iff }w1[i-1] = w2[j-1] \\
+    dp[i-1][j-1]+1, &amp;\text{最后一步替换末尾元素} \\
+    dp[i-1][j]+1, &amp;\text{最后一步删除末尾元素} \\
+    dp[i][j-1]+1, &amp;\text{最后一步末尾添加元素} \\
+\end{array}
+\right.
+\]</span> 说明：</p>
+<ol type="1">
+<li>从定义可以看出dp的大小为<span class="math inline">\((m+1)\times (n+1)\)</span>,m、n分别两个单词的长度。</li>
+<li>后三项需要合并使用。</li>
+<li>可以证明当末尾元素相等，第二项为最优解之一，所以可以单独使用。</li>
+</ol>
+<p><a href="https://leetcode.com/problems/longest-common-subsequence/.html">例 最长公共子串</a>，<span class="math inline">\(dp[i][j]\)</span>是text1[:i]和text2[:j]最长公共子串的长度。 <span class="math display">\[
+dp[i][j] = 
+\left\{ 
+\begin{array}{ll}
+    0, &amp;\text{if} i = 0 \or j = 0 \\
+    dp[i-1][j-1]+1, &amp;\text{if }text1[i-1] = text2[j-1] \\
+    \max(dp[i-1][j],dp[i][j-1])+1, &amp;\text{else} \\
+\end{array}
+\right.
+\]</span></p>
+</section>
+</section>
+</section>
+</body>
+</html>
